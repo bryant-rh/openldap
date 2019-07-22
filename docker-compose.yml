@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+    openldap:
+      image: harbor.hitales.ai/hitales-ldap/openldap:latest
+      container_name: openldap
+      environment:
+        LDAP_ORGANISATION: "yiyildap"
+        LDAP_DOMAIN: "yiyildap.hitales.ai"
+        LDAP_ADMIN_PASSWORD: "Hitales@2019"
+        LDAP_TLS_VERIFY_CLIENT: "try"
+        #LDAP_TLS_ENFORCE: "true"
+      volumes:
+        - /nas-data/openldap/ldap/database:/var/lib/ldap
+        - /nas-data/openldap/ldap/config:/etc/ldap/slapd.d
+      restart: always
+      ports:
+        - 389:389
+        - 689:689
+      hostname: "yiyildap.hitales.ai"
+      domainname: "yiyildap.hitales.ai"
+    phpldapadmin:
+      image: harbor.hitales.ai/hitales-ldap/phpldapadmin:latest
+      container_name: phpldapadmin
+      environment:
+        PHPLDAPADMIN_LDAP_HOSTS: openldap
+      links:
+        - openldap
+      ports:
+        - 6443:443
+      restart: always
+    ssp:
+      image: harbor.hitales.ai/hitales-ldap/self-service-password:v1.3
+      container_name: ssp
+      volumes:
+        -  /nas-data/openldap/self-service-password/config/config.inc.local.php:/var/www/html/conf/config.inc.php
+      ports:
+        - '8080:80'
